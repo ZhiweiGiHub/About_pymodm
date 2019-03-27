@@ -1,0 +1,582 @@
+#面向对象编程#
+
+"""
+封装：
+上述对比可以看出，如果使用函数式编程，
+需要在每次执行函数时传入相同的参数，
+如果参数多的话，又需要粘贴复制了...  ；
+而对于面向对象只需要在创建对象时，
+将所有需要的参数封装到当前对象中，
+之后再次使用时，通过self间接去当前对象中取值即可。
+"""
+
+class info(object):
+    def __init__(self,name,age):
+        self.name = name
+        self.age = age   #参数的封装   
+    def do_one(self):
+        str = "%s, %d岁, 男, 上山." % \
+        (self.name,self.age)
+        print(str)
+    def do_two(self):
+        str = "%s, %d岁, 男, 开车." % \
+        (self.name,self.age)
+        print(str)
+    def do_three(self):
+        str = "%s, %d岁, 男, 渡海." % \
+        (self.name,self.age)
+        print(str)
+
+"""
+多态：
+可以很明显的看出，Person类拥有跟Duck类一样的方法，
+当有一个函数调用Duck类，并利用到了两个方法walk()和swim()。
+我们传入Person类也一样可以运行，函数并不会检查对象的类型是不是Duck，
+只要他拥有walk()和swim()方法，就可以正确的被调用。 
+"""
+
+"""
+如何使用OOP来编程（一些例子）
+"""
+
+#函数式编程
+def addPoints(p1,p2):
+    r = []
+    r.append(p1[0] + p2[0])
+    r.append(p1[1] + p2[1])
+    return r
+
+p = [1,2]
+q = [3,1]
+r = addPoints(p,q)
+print(r)
+
+#类是创建实例的模板
+class cartesianPoints:
+    pass
+cp1 = cartesianPoints()
+
+cp2 = cartesianPoints()
+cp1.x = 1   #数据封装
+cp1.y = 2   #数据封装
+
+cp2.x = 1
+cp2.y = 2
+
+#想比较它们是不是一个点
+def samePoint(p1,p2):
+    return (p1.x == p2.x) and (p1.y == p2.y)
+
+import math
+class polarPoint:
+    pass
+
+pp1 = polarPoint()
+pp2 = polarPoint()
+
+pp1.radius = 1
+pp1.angle = 0
+
+pp1.radius = 2
+pp1.angle = math.pi / 4
+
+
+class cPoints():
+    def __init__(self,x,y):  #在创建实例的时候需要赋值两个参数
+       self.x = x   #self是指向实例的指针
+       self.y = y
+       self.radius = math.sqrt(self.x*self.x + self.y*self.y)
+       self.angle = math.atan2(self.y,self.x)
+    def cartesian(self):
+        return (self.x,self.y)
+    def polar(self):
+        return (self.radius,self.angle)
+    def __str__(self):
+        return '(' + str(self.x) + ',' + str(self.y) + ')'
+    def __cmp__(self,other):
+        return (self.x > other.x) and (self.y > other.y)
+
+#现实关联方法：dir()
+"""
+OOP
+有编程步骤都可以浓缩成一个类，
+并且数据只读取一遍，被每个步骤所利用
+"""
+
+"""
+Lecture16:封装时需要注意的
+1、 a class is a template for an abstract 
+data type.
+类就是虚拟数据类型的模板
+2、 python没有做到完全的data hiding，集可以访问
+类中的数据结构
+3、类会创建实例
+
+模块化：将数据和函数聚集起来
+
+"""
+import operator
+class Person(object):
+    def __init__(self,family_name,first_name):
+        self.family_name = family_name
+        self.first_name = first_name
+    def familyName(self):
+        return self.family_name  #合法访问类中‘封装’的数据
+    def firstName(self):
+        return self.first_name
+    def __cmp__(self,other):
+        return operator.eq((self.family_name,self.first_name), \
+                           (other.family_name, other.first_name))
+    def __str__(self):
+        return '<Person: %s %s>' % (self.first_name,self.family_name)
+    def say(self,toWhom,something): #可以获取其他类（toWhom）的数据
+        return self.first_name + ' ' + self.family_name + \
+    ' say to ' + toWhom.firstName() + ' ' \
+    + toWhom.familyName() + ': ' + something
+    def sing(self,toWhom,something):
+       return self.say(toWhom,something + ' tra la la') 
+    
+    
+class MITPerson(Person):
+    nextIdNum = 0   #局部变量，和函数内部的变量一样，不可再workshop中显示
+    def __init__(self,familyName,firstName):
+        Person.__init__(self,familyName,firstName)
+        #MITPerson从Person继承了初始化函数，完成了实例初始化
+        self.idNum = MITPerson.nextIdNum
+        MITPerson.nextIdNum += 1 
+    def getIdNum(self):
+        return self.idNum
+    def __str__(self):
+        return '<MIT Person: %s %s>' % (self.first_name, \
+                                        self.family_name)
+    def __cmp__(self,other):
+        return operator.eq(self.idNum,other.idNum)
+    
+    
+class UG(MITPerson):
+    def __init__(self,familyName,firstName):
+        MITPerson.init__(self,familyName,firstName)
+        self.year = None
+    def setYear(self,year):
+        if year > 5: raise OverflowError('Too many')
+        self.year = year
+    def getYear(self):
+        return self.year
+    def say(self,toWhom,something):
+        return MITPerson.say(self,toWhom,'Excuse me, but ' + something)
+    #映射shadowing： 仅仅调用了person类的say方法
+    
+class Prof(MITPerson):
+    def __init__(self,familyName,firstName,rank):
+        MITPerson.__init__(self,familyName,firstName)
+        self.rank = rank
+        self.teaching = {}                 #这里是创建了一个字典，字典的每个key对应一个元胞
+    def addTeaching(self,term,subj):
+        try:
+            self.teaching[term].append(subj)
+        except KeyError:
+            self.teaching[term] = [subj]   #一开始为空值，这里赋值
+    def getTeaching(self,term):
+        try:
+            return self.teaching[term]
+        except KeyError:
+            return None
+    def lecture(self,toWhom,something):
+        return self.say(toWhom,something \
+                        + ' as it is obvious')
+    def say(self,toWhom,something):
+        if type(toWhom) == UG:
+            return MITPerson.say(self,toWhom,\
+                                 'I do not understand why you say' \
+                                 + something)
+        elif type(toWhom) == Prof:
+            return MITPerson.say(self,toWhom,'I really liked your paper on ' \
+                                 + something)
+        else:
+            return self.lecture(something)
+
+#me = Prof('Grimson','Eric','Full')
+#me.addTeaching('F08','6')
+#me.addTeaching('S09','6')
+#me.addTeaching('S09','6.xxx')   #S09键对应的数据和F08键对应的数据是不同规格的
+#
+#print(me.getTeaching('F08'))
+#print(me.getTeaching('S09'))       
+    
+    
+class Faculty(object):
+    def __init__(self):
+        self.names = []
+        self.IDs = []
+        self.members = []
+        self.place = None
+    def add(self,who):
+        if type(who) != Prof: raise TypeError('not a professor')
+        if who.getIdNum() in self.IDs: raise ValueError('duplicate ID') 
+        #这里抛出错误也当作停止
+        self.names.append(who.familyName())
+        self.IDs.append(who.getIdNum())
+        self.members.append(who)
+    #以下这两个method可以让类用于for循环
+    def __iter__(self):
+        self.place = 0 #指针，从列表第一个开始
+        return self
+    def __next__(self):
+        if self.place >= len(self.names):
+            raise StopIteration
+        self.place += 1
+        return self.members[self.place-1]
+    
+gri = Prof('Gri','Eric','Full')
+loz = Prof('Loz','Tomas','Full')
+gutt = Prof('Gutt','John','Full')
+
+course6 = Faculty()
+course6.add(gri)
+course6.add(loz)
+course6.add(gutt)
+
+for p in course6:
+    print(p.familyName())
+    #print(p.names())注意这里不能这么写，因为course6的元素是Prof类，没有names方法
+
+"""
+下面课程的重点：
+1、处理随机性
+2、合理运用数据
+3、评价计算机处理的结果
+"""    
+
+"""
+lecture 17 Random Walk
+"""
+
+import math, random, pylab  
+
+class Location(object):
+    def __init__(self,x,y):
+        self.x = float(x)
+        self.y = float(y)
+    def move(self,xc,yc):
+        return Location(self.x+float(xc),self.y+float(yc))
+    def getCoords(self):
+        return self.x,self.y
+    def getDist(self,other):
+        ox,oy = other.getCoords()
+        xDist = self.x - ox
+        yDist = self.y - oy
+        return math.sqrt(xDist**2 + yDist**2)
+
+class CompassPt(object):
+    possibles = ('N','S','E','W')
+    def __init__(self,pt):
+        if pt in self.possibles:self.pt = pt
+        else:raise ValueError('in CompassPt.__init__')
+    def move(self,dist):
+        if self.pt == 'N':return (0,dist)
+        elif self.pt == 'S':return (0,-dist)
+        elif self.pt == 'E':return (dist,0) 
+        elif self.pt == 'W':return (-dist,0)
+        else:raise ValueError('in CompassPt.move')
+    
+class Field(object):
+    def __init__(self,drunk,loc):
+        self.drunk = drunk
+        self.loc = loc
+    def move(self,cp,dist):
+        oldLoc = self.loc
+        xc,yc = cp.move(dist)
+        self.loc = oldLoc.move(xc,yc)
+    def getloc(self):
+        return self.loc
+    def getDrunk(self):
+        return self.drunk
+
+class Drunk(object):
+    def __init__(self,name):
+        self.name = name
+    def move(self,field,time =1):
+        if field.getDrunk()!=self:
+            raise ValueError('Drunk.move called with drunk not in field')
+        for i in range(time):
+            pt = CompassPt(random.choice(CompassPt.possibles))
+            field.move(pt,1)
+    def performTrial(time,f):
+        start = f.getLoc()
+        distances = [0]
+        for t in range(1,time +1):
+            f.getDrunk().move(f)
+            newLoc = f.getLoc()
+            distance = newLoc.getDist(start)
+            distances.append(distance)
+        return distance
+    
+    
+"""
+Lecture 20 Monte Carlo
+"""
+
+from pylab import *
+import random, math
+
+def filpTrial(numFlips):
+    heads, tails = 0,0
+    for i in range(0,numFlips):  #xrange是一个生成器，而不是像range一样生成列表
+        coin = random.randint(0,1)
+        if coin == 0:heads +=1
+        else: tails += 1
+    return heads,tails
+def simFlips(numFlips, numTrials):
+    diffs = []
+    for i in range(0,numTrials):
+        heads,tails = filpTrial(numFlips)
+        diffs.append(abs(heads - tails))
+    diffs = array(diffs)  #由列表形成了一个向量
+    diffMean = sum(diffs)/len(diffs)
+    diffPercent = (diffs/float(numFlips))*100
+    percentMean = sum(diffPercent)/len(diffPercent)
+    hist(diffs)
+    axvline(diffMean,color = 'r',label = 'Mean')
+    legend()
+    titleString = str(numFlips) + 'Flips, '+str(numTrials)+' Trials'
+    title(titleString)
+    xlabel('Differance between heads and tails')
+    ylabel('Number of Trials')
+    figure()
+    plot(diffPercent)
+    axhline(percentMean,color = 'r',label = 'Mean')    
+    legend()
+    title(titleString)
+    xlabel('Trial Number')
+    ylabel('Percent Difference between heads and tails')
+    
+
+simFlips(3, 4000)    
+    
+    
+    
+import locale
+locale.setlocale(locale.LC_ALL,'en_US.UTF-8')
+
+def formatInt(i):
+    return locale.format('%d',i,grouping = True)   #在千分位上加逗号
+
+from pylab import *
+import random, math
+
+def throwDarts(numDarts,shouldPlot):
+    inCircle = 0
+    estimates = []
+    for darts in range(1,numDarts + 1,1):
+        x = random.random()
+        y = random.random()
+        if math.sqrt(x*x + y*y) <= 1:
+            inCircle += 1
+        if shouldPlot:
+            piGuess = 4*(inCircle/float(darts))
+            estimates.append(piGuess)
+        if darts%1000000 == 0:
+            piGuess = 4*(inCircle/float(darts))
+            print('Estimate with',formatInt(darts),'darts:',piGuess)
+    if shouldPlot:
+        xAxis = arange(1,len(estimates)+1)
+        semilogx(xAxis,estimates)
+        titleString = 'Estimations of pi, final estimation: '+str(piGuess)
+        title(titleString)
+        xlabel('Number of Darts Thrown')
+        ylabel('Estimate of pi')
+        axhline(3.14159)
+    return 4*(inCircle/float(numDarts))
+
+def findPi(numDarts,shouldPlot = False):
+    piGuess = throwDarts(numDarts,shouldPlot)
+    print('Estimated value of pi with',formatInt(numDarts),'Darts:',piGuess)
+
+
+findPi(1000000,True)
+#findPi(100000000)
+show()
+        
+        
+        
+        
+        
+"""
+Lecture 21 线性回归
+"""
+
+from pylab import *
+
+def getSpringData(fname):
+    springData = open(fname,'r')
+    distances = []
+    forces = []
+    for line in springData:
+        if line[0] == '#':continue
+        line = line[:-1]
+        elems = line.rsplit(':')
+        distances.append(float(elems[0]))
+        forces.append(float(elems[1]))
+    return pylab.array(distances),pylab.array(forces)
+
+distances, forces = getSpringData('springData.txt')
+scatter(distances,forces)
+xlabel('Distance (Meters)')
+ylabel('|Force| (Newtons)')
+title('Force vs. Distance for Spring')
+
+k, b = polyfit(distances,forces,1)
+yVals = k*distances + b
+plot(distances,yVals,c = 'r',linewidth = 2)
+title('Force vs. Distance,k = ' + str(k))        
+        
+
+
+"""
+Lecture 22 分布
+"""        
+
+from pylab import *  #使用from的放在第一行
+import random
+
+fair = [1,2,3,4,5,6]  #骰子的不同面
+
+def throwPair(vals1,vals2):
+    d1 = random.choice(vals1)
+    d2 = random.choice(vals2)
+    return d1,d2
+
+def conductTrials(numThrows,die1,die2):
+    throws = []
+    for i in range(numThrows):
+        d1,d2 = throwPair(die1,die2)
+        throws.append(d1+d2)    #两次点数之和
+    return throws
+
+numThrows = 100000
+throws = conductTrials(numThrows,fair,fair)
+hist(throws,11)
+xticks(range(2,13),['2','3','4','5','6','7','8','9','10','11','12'])
+title('Distribution of Values')
+xlabel('Sum of Two Die')
+ylabel('Number of Throws')
+
+figure()
+sums = array([0]*14)
+for val in range(2,13):
+    sums[val] = throws.count(val) #统计字符串里某个字符出现的次数
+probs = sums[2:13]/float(numThrows)  #这里的sums是一个向量，而非列表，所以可以除以一个标量
+xVals = arange(2,13)
+plot(xVals,probs,label = 'Fair Dice')   #plot可以对列表也可以对向量画图
+xticks(range(2,13),['2','3','4','5','6','7','8','9','10','11','12'])
+title('Probability of a Values')
+xlabel('Sum of Two Die')
+ylabel('Probability')        
+        
+
+#一个游戏
+def craps(die1,die2):
+    d1,d2 = throwPair(die1,die2)
+    tot = d1 + d2
+    if tot in [7,11]:return True
+    if tot in [2,3,12]:return False
+    point = tot
+    while True:  #这个和上面两行的结果并没有关系，只是说明下面的if语句如果未被执行就一直掷色子
+        d1,d2 = throwPair(fair,fair)  #不是1，11，2，3，12，再掷色子一次
+        tot = d1 + d2
+        if tot == point: return True
+        if tot == 7: return False
+
+def simCraps(numBets,die1,die2):
+    wins,losses = (0,0)
+    for i in range(numBets):
+        if craps(die1,die2):wins += 1
+        else: losses +=1
+    print((wins,losses))
+    houseWin = float(losses)/float(numBets)
+    print(houseWin)
+    print('House winning percentage: '+ str(100*houseWin)+'%')
+    print('House profits per $%d bet: $%d' % (numBets, losses-wins))     
+
+simCraps(1000000,fair,fair)
+        
+
+#不公平赌局
+weighted = [1,2,3,4,5,5,6]
+throws = conductTrials(numThrows,fair,weighted)
+sums = array([0]*14)
+for val in range(2,13):
+    sums[val] = throws.count(val) #统计字符串里某个字符出现的次数
+probs = sums[2:13]/float(numThrows)  #这里的sums是一个向量，而非列表，所以可以除以一个标量
+xVals = arange(2,13)
+plot(xVals,probs,label = 'Weight Dice')   #plot可以对列表也可以对向量画图
+xticks(range(2,13),['2','3','4','5','6','7','8','9','10','11','12'])
+title('Probability of a Values')
+xlabel('Sum of Two Die')
+ylabel('Probability')   
+
+simCraps(1000000,fair,weighted)
+
+show()
+
+
+"""
+Lecture 23 Stock Market Simulation
+"""
+import random
+import pylab
+
+class Stock(object):
+    def __init__(self,price,distribution):  #distribution是一个函数
+        self.price = price
+        self.history = [price]
+        self.distribution = distribution
+        self.lastChange = 0
+    def setPrice(self,price):
+        self.price = price
+        self.history.append(price)
+    def makeMove(self,mktBias,mo):
+        oldPrice = self.price
+        baseMove = self.distribution()+mktBias
+        self.price = self.price*(1 + baseMove)
+        #作者这里使用了乘法而非加法来表现股价变化。因为他发现股价变动水平和股价水平成正比
+        self.price += mo*random.gauss(.25,.25)*self.lastChange
+        #mo是momentum势能。这里表示过去历史影响了现在的股价（反应不足）
+        if self.price < 0.01:
+            self.price = 0
+        self.history.append(self.price)
+        self.lastChange = self.price - oldPrice
+    def showHistory(self,figNum):
+        pylab.figure(figNum)
+        pylab.plot(self.history)
+        pylab.title('Closing Price, Test '+ str(figNum))
+        pylab.xlabel('Day')
+        pylab.ylabel('Price')
+
+
+def unitTestStock():
+    def runSim(stks,fig,mo):  #这是函数中的函数，里面的参数不需要事先定义好
+        mean = 0
+        for s in stks:
+            for d in range(numDays):
+                s.makeMove(bias,mo)
+            s.showHistory(fig)
+            mean += s.price   #不好的数据调用
+        mean = mean/float(numStks)
+        pylab.axhline(mean)
+    numStks = 100
+    numDays = 100
+    stks1 = []
+    stks2 = []
+    bias = 0
+    mo = 0
+    for i in range(numStks):
+        volatility = random.uniform(0,0.2)
+        d1 = lambda:random.uniform(-volatility,volatility) #d1是一个函数
+        d2 = lambda:random.gauss(0,volatility/2)
+        stks1.append(Stock(100,d1))
+        stks2.append(Stock(100,d2))
+    runSim(stks1,1,mo)
+    runSim(stks2,2,mo)
+    
+unitTestStock()
